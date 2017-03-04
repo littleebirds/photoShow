@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<style>
+    *{
+        margin: 0;
+        padding: 0;
+    }
+    html,body{
+        height: 100%;
+    }
+    #wrap{
+        height: 100%;
+        background: url('image/page-bg.jpg');
+        background-size: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+    #box{
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        margin: auto;
+        -webkit-perspective: 800px;
+        perspective: 800px;
+        transition: 1s;
+
+    }
+    #box .photo{
+        width: 60vw;
+        height: 45vw;
+        position: absolute;
+        z-index: 1;
+        box-shadow: 0 0 1px rgba(0,0,0,.01);
+        transition: 1s;
+    }
+    .photo .side{
+        width: 100%;
+        height: 100%;
+        background-color: #ffffff;
+        position: absolute;
+        top:0;
+        left: 0;
+        padding: 15px;
+        box-sizing: border-box;
+    }
+    .photo .side-front{
+        display: block;
+    }
+    .side-front p:first-of-type{
+        width: 100%;
+        overflow: hidden;
+    }
+    #box img{
+        width: 100%;
+    }
+    .side-front p:last-of-type{
+        font-family: '微软雅黑';
+        font-size: 16px;
+        line-height: 50px;
+        text-align: center;
+    }
+    .side-back p{
+        color: #666;
+        font-size: 16px;
+        line-height: 1.5em;
+    }
+    #box .photo-center{
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        margin: auto;
+        z-index: 20;
+    }
+    .photo-wrap{
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        -webkit-transform-style: preserve-3d;
+        transform-style: preserve-3d;
+        transform-origin: 0  50%;
+        transition: 1s;
+    }
+    .photo-wrap .side-front{
+        transform: translate3d(0,0,0) rotateY(0deg);
+    }
+    .photo-wrap .side-back{
+        transform: translate3d(0,0,0) rotateY(180deg);
+    }
+    .photo-wrap .side{
+        -webkit-backface-visibility: hidden;
+    }
+
+    .photo-front .photo-wrap{
+        transform: translate3d(0,0,0) rotateY(0deg);
+    }
+    .photo-back .photo-wrap{
+        transform: translate3d(60vw,0,0) rotateY(180deg);
+    }
+    .photo{
+        left: 0;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        margin: auto;
+    }
+</style>
+<body>
+<div id="wrap">
+    <div id="box">
+            <div class="photo photo-front">
+                <div class="photo-wrap">
+                        <div class="side side-front">
+                            <p><img src="{{path}}"></p>
+                            <p>{{title}}</p>
+                        </div>
+                        <div class="side side-back">
+                            <p>{{desc}}</p>
+                        </div>
+                </div>
+            </div>
+    </div>
+</div>
+<script type="text/javascript" src="photo/data.js"></script>
+<script type="text/javascript" src="js/m-fun.js"></script>
+<script>
+    var oBox=document.getElementById('box');
+
+    //输出所有图片
+    var data=data;
+    function  addPhoto() {
+        var temp=oBox.innerHTML;
+        var html=[];
+        for(var s in data){
+            var _html=temp
+                    .replace('{{path}}',data[s].path)
+                    .replace('{{title}}',data[s].title)
+                    .replace('{{desc}}',data[s].desc);
+            html.push(_html);
+        }
+        oBox.innerHTML=html.join('');
+    }
+    addPhoto();
+
+    var ophoto=fun.getClass2(oBox,'photo');
+
+    for(var i=0;i<ophoto.length;i++){
+        ophoto[i].index=i;
+        ophoto[i].onclick=function () {
+            turn(this);
+        };
+    }
+    rrSort(rand([0,10]));
+    //排序图片
+    function rrSort(n){
+        var photos=[];
+
+        for(var i=0;i<ophoto.length;i++){
+            ophoto[i].style="";
+            ophoto[i].style.transform="scale(1.5)";
+            ophoto[i].className='photo photo-front';
+
+            photos.push(ophoto[i]);
+        }
+        var p_center=ophoto[n];
+        p_center.className+=' photo-center';
+        p_center=photos.splice(n,1)[0];
+
+        //把海报分为上下两个区域
+        var photos_top=photos.splice(0,Math.ceil(photos.length/2));
+        var photos_bottom=photos;
+
+        var rans=range();
+        for(var j in photos_top){
+//            photos_top[j].style.left=rand(rans.top.x)+'px';
+//            photos_top[j].style.top=rand(rans.top.y)+'px';
+            photos_top[j].style.transform='translate3d('+rand(rans.top.x)+'px,'+rand(rans.top.y)+'px,0) rotate('+rand([-270,270])+'deg) scale(1)';
+        }
+        for(var l in photos_bottom){
+//            photos_bottom[l].style.left=rand(rans.bottom.x)+'px';
+//            photos_bottom[l].style.top=rand(rans.bottom.y)+'px';
+            photos_bottom[l].style.transform='translate3d('+rand(rans.bottom.x)+'px,'+rand(rans.bottom.y)+'px,0) rotate('+rand([-270,270])+'deg) scale(1)';
+        }
+    }
+    //简单的翻转效果
+    function turn(obj) {
+        var cls=obj.className;
+        if(!/photo-center/.test(cls)){
+            return rrSort(obj.index);
+        }
+        if(/photo-front/.test(cls)){
+           cls= cls.replace(/photo-front/,'photo-back')
+        }else{
+            cls= cls.replace(/photo-back/,'photo-front')
+        }
+        obj.className=cls;
+
+    }
+    
+    //随机函数
+    function rand(range) {
+        var max=Math.max(range[0],range[1]);
+        var min=Math.min(range[0],range[1]);
+
+        var diff=max-min;
+        var num=Math.ceil(Math.random()*diff+min);
+        return num;
+    }
+    
+    //计算取值范围
+    function range() {
+        var range={top:{x:[],y:[]},bottom:{x:[],y:[]}};
+
+        range.top.x=[0-(oBox.clientWidth/2),oBox.clientWidth/2+ophoto[0].clientWidth];
+        range.top.y=[0-oBox.clientHeight/2,-ophoto[0].clientWidth/2];
+
+        range.bottom.x=[0-(oBox.clientWidth/2),oBox.clientWidth/2+ophoto[0].clientWidth];
+        range.bottom.y=[ophoto[0].clientHeight/2,oBox.clientHeight/2];
+
+        return range;
+    }
+</script>
+</body>
+</html>
